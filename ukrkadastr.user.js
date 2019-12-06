@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           WME Ukrkadastr Layer
 // @author         Andrei Pavlenko, Anton Shevchuk
-// @version        0.7.0
+// @version        0.7.1
 // @include        /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor.*$/
 // @exclude        https://www.waze.com/user/*editor/*
 // @exclude        https://www.waze.com/*/user/*editor/*
@@ -11,7 +11,6 @@
 // @require        https://greasyfork.org/scripts/389577-apihelperui/code/APIHelperUI.js?version=734620
 // @namespace      https://greasyfork.org/users/182795
 // ==/UserScript==
-
 
 /* jshint esversion: 8 */
 /* global window */
@@ -29,7 +28,7 @@
 
   let kadastrLayer, markerLayer, markerIcon;
   let helper, tab;
-  let visibility = localStorage.getItem('kadastr-layer') || false;
+  let visibility = !!localStorage.getItem('kadastr-layer');
   const markerIconURL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAABR5JREFUeNrsXF1uEzEQdtKkSX/TqDwUISCIV6TkGQklHACpPQHhBuEG2xOQnIDkBqk4AImQeC4Sz9DwQh9AZUtp0iZtmakcRMG760121/bujGStlLU93vlmxp/t3aSurq4YiTpJkwkIAAKAhAAgAEgIAAKAhAAgAEgIAAKAhAAgAEgIgERIxqTBHj57UoELlpJDlQMo+1tv3u2b8kwp3c8DwOh1uGxDqUEpSDazofSgdAGMNgHg3+gbcGnwUpizOwSjiQXA+EEAeBsfjW4FYHgREBaA0CQAnL2+C6Uasqo+pjRdokELAPjk2gvB692ioabDZJ1OoPEZ19XjupMLgCLjawWCshQED45cft+v8S9hvKPJBTsdj2/8vpzNsnxmgaVTqVnSUQXS0UHSFmJdP8a3z87Z0WjEzsD4Ivk+HF1fcwBCMZ9nhdyin0jo8gVeMlIQeD/SzLJM3ZPzMft0ZLPDk1+Oxv9bsA7WxTbYVlLKfEzxT0F+Ug8aEj1/rkQPkbC1uqJtKlIRAVZUxp+mLuxLMhVZsY4Avtg6isr4M0ZCMcpFWtQRUJfJ+R7Gx1TRgbID5SkvO/w32y0SJOeEepQGyegEAFLMr+7pAo3cqL7/KPLQbv/xI4ww3Ot5LmqMfT8sFryoap33Ea8UJJN+vp0O/9BJgbwAw7dldAEQaMTXonubS3l2a3lJmzQUZQqqeVU4dk49LVnjo/C6LZ86fI3VRAAqXvx9fHkpujWYkZ1YvO0NQR0S64lK4gA4nUycbrUdcr5XFGCbtk9dsQZgw+3mhdj7p1sW82x3+NElNVbjtyJEMnTwSvDkmffsndoOvSOAJQ6ApIo2AOQWFpwoZWnWPp3aOulKNAAui6N5KGHNp65YA9Bzu4kHKiFsDdR96pIaq6kAHLgD4LgrUoVUsj1D+sE2VZH3u+iSGmssIwDF5RSrDQat+DB+xWkNsLaYDWSsxgHADzoGbnU2nfdorg/QwbA1CePXmMtB/6b3PtAgykOZqCdh10VVNp1mxXzODYS3YOCuKCXhb3gP6zgZH/tGHfOMMWiJ+kAGaeFntzq4Jf3l+KfU+S/IB371PF/Gw/p762syDOhBbCOAP1jfi47eXlmRpYplGeP76LOflDNhKW+VSBdMti+8BjE24wEAD8MJsiNjuNLGOluVYy1CwbY+jN/hY0vEShhfQbdlUsedtVV2F4wowd1vrCmwDbaVTGU2H1PkovLVRHzgV37a4GEKHqyfTSb/Hd5gusplMtdeP0PqeqnquwGlr6cDCDjh3Ve8HYO8v6RKuerNuDpTL0rHoBQAPun1FQ6hr2Li1SkCVHug8ghUDgBf+LQUqG6p+iZAtwiYLoDsCPXZKhZd2gLA30KL0iAWfSUppqX4FkM5ZDUfwPgVXZ5Zt7ciGjHRYSYAnBLuhahiTzXt1D0CwvbQhm4Pqx0AnBruhtD1rg6004QIQGkGTEun/5jCCAB5Whpkumjo+Fc12tHQkGipVrTTlBQU5KTZ0PkBtQYgAFqqHe00LQLm9eCG7g+nPQBz0FItaaeJETClpQMf9Qe60k4jAZhht9TSlXYaRUMFtBQnVK8/9cNjxpopz2TaN2JWQHUIgDloqdtbdR3daafpETD1cNE+kW2a9xsJAKeWIobTNIF2xiECRLTUGNoZCwAEtNQY2mk0DXWgpcwk2vmvZJjZ0jB8/GZHQByE/qyDACAASAgAAoCEACAASAgAAoCEACAASAgAAoCEAEiG/BZgAIdH+4FfAgoVAAAAAElFTkSuQmCC';
 
   APIHelper.bootstrap();
@@ -127,6 +126,7 @@
 
   function addHandlers() {
     W.map.events.register('click', null, e => {
+      if (!visibility) return false;
       let coordinates = W.map.getLonLatFromPixel(e.xy);
       drawMarker(coordinates);
       fetchAreaData(coordinates);
@@ -136,6 +136,8 @@
     $(document).on('click', '#layer-switcher-item_map_kadastr', e => {
       let checked = e.target.checked;
       localStorage.setItem('kadastr-layer', checked ? '1' : '');
+      visibility = checked;
+
       kadastrLayer.setVisibility(checked);
       markerLayer.setVisibility(checked);
       if (checked) {
